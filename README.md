@@ -53,7 +53,7 @@ python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG <examples/jnpr
 python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG <<< '<get-route-engine-information/>'
 ```
 
-### Example 3 - RPC from STDIN (mult-line text):
+### Example 3 - RPC from STDIN (multi-line text):
 ```bash
 cat << EOF | python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG
 <rpc>
@@ -137,5 +137,5 @@ dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_disp
     </route-engine>
 </route-engine-information>
 </nc:rpc-reply>
-dysun@dysun-Super-Server:~/code/generic_ncclient$ 
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ 
 ```
