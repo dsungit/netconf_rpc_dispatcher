@@ -86,28 +86,7 @@ def process_rpc(rpc: str):
 def main():
     parser = argparse.ArgumentParser(
         description="Generic NETCONF RPC Dispatcher",
-        epilog=dedent(f"""
-        # RPC FROM STDIN (FILE)
-        python3 {PROGNAME} --host r1.lab --log-level DEBUG <examples/jnpr/jnpr_edit_config.xml 
-
-        # RPC FROM STDIN (SINGLE LINE)
-        python3 {PROGNAME} --host r1.lab --log-level DEBUG <<< '<get-route-engine-information/>'
-
-        # RPC FROM STDIN, REDIRECT STDERR TO STDOUT AND LOG
-        python3 {PROGNAME} --host r1.lab --log-level DEBUG <examples/jnpr/jnpr_get_config.xml 2>&1 | tee session.log
-
-        # MULTIPLE RPCS 
-        python3 {PROGNAME} --host r1.lab --log-level DEBUG \\
-            --rpc '<get-chassis-inventory/>'  \\
-            --rpc 'examples/get_config.xml' \\
-            --rpc '<rpc>
-                       <get-interface-information>
-                           <terse/>
-                           <interface-name>et-0/0/0</interface-name>
-                       </get-interface-information>
-                   </rpc>'
-        """),
-        formatter_class=argparse.RawTextHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # ADD RPC OPTS
     parser.add_argument("--rpc",type=str, action="append", help="RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)")
@@ -127,17 +106,7 @@ def main():
     # ARGUMENT PROCESSING
     args = parser.parse_args()
     setup_logger(args)
-
-    # CONFIGURE LOGGING
-    #if args.log_level != 'NOTSET':
-    #   logging.basicConfig(
-    #       level=getattr(logging, args.log_level),
-    #       format="%(asctime)s [%(levelname)s]: %(message)s",
-    #       handlers=[
-    #           logging.FileHandler(args.log_file) if args.log_file else logging.StreamHandler(),
-    #       ]
-    #   )
-    
+ 
     logging.info("Starting NETCONF script")
 
     # RPC STR TO XML OBJECT CONVERSION

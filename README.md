@@ -22,24 +22,25 @@ While there are dedicated functions and helper routines available in `ncclient` 
 
 
 ```bash
-usage: netconf_rpc_dispatcher.py [-h] [--rpc RPC] [--timeout TIMEOUT] [--host HOST] [--port PORT] [--username USERNAME] [--password PASSWORD] [--ssh-key SSH_KEY] [--log-file LOG_FILE]
-                          [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: netconf_rpc_dispatcher.py [-h] [--rpc RPC] [--timeout TIMEOUT] [--host HOST] [--port PORT] [--username USERNAME]
+                                 [--password PASSWORD] [--ssh-key SSH_KEY] [--log-file LOG_FILE]
+                                 [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Generic NETCONF RPC Dispatcher
 
 options:
   -h, --help            show this help message and exit
   --rpc RPC             RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)
-  --timeout TIMEOUT     RPC default response timeout in seconds
-  --host HOST           NETCONF server host
-  --port PORT           NETCONF server port
-  --username USERNAME   NETCONF client username
-  --password PASSWORD   NETCONF client password
-  --ssh-key SSH_KEY     NETCONF client private SSH key
-  --log-file LOG_FILE   Logging file
+                        (default: None)
+  --timeout TIMEOUT     RPC default response timeout in seconds (default: 60)
+  --host HOST           NETCONF server host (default: localhost)
+  --port PORT           NETCONF server port (default: 830)
+  --username USERNAME   NETCONF client username (default: lab)
+  --password PASSWORD   NETCONF client password (default: lab123)
+  --ssh-key SSH_KEY     NETCONF client private SSH key (default: /home/dysun/.ssh/id_ecdsa)
+  --log-file LOG_FILE   Logging file (default: None)
   --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        Logging level
-
+                        Logging level (default: NOTSET)
 ```
 
 ### Example 1 - RPC from STDIN (file):
