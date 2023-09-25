@@ -1,0 +1,21 @@
+<rpc>
+    <get>
+        <filter type="subtree">
+            <configuration>
+                 <!-- tag elements representing the configuration elements to return -->
+            </configuration>
+        </filter>
+    </get>
+</rpc>
+
+
+
+
+
+
+
+
+
+
+
+

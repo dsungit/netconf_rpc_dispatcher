@@ -1,0 +1,9 @@
+<get>
+    <filter type="subtree">
+        <configuration>
+            <class-of-service>
+                <scheduler-maps/>
+            </class-of-service>
+        </configuration>
+    </filter>
+</get>

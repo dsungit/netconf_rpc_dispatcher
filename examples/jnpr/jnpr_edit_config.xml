@@ -1,0 +1,33 @@
+<edit-config> 
+    <target> 
+        <candidate/> 
+    </target>
+    <config> 
+        <configuration>
+            <class-of-service>
+                <scheduler-maps>
+                    <name>SCH-MAP:NEBULA-TRANSIT</name>
+                    <forwarding-class>
+                        <name>Q0-BEST-EFFORT</name>
+                        <scheduler>REM-BE</scheduler>
+                    </forwarding-class>
+                    <forwarding-class>
+                        <name>Q1-EXPEDITED-FORWARDING</name>
+                        <scheduler>10PCT-EF</scheduler>
+                    </forwarding-class>
+                    <forwarding-class>
+                        <name>Q2-ASSURED-FORWARDING</name>
+                        <scheduler>75PCT-AF</scheduler>
+                    </forwarding-class>
+                    <forwarding-class>
+                        <name>Q3-NETWORK-CONTROL</name>
+                        <scheduler>1PCT-NC</scheduler>
+                    </forwarding-class>
+                </scheduler-maps>
+            </class-of-service>         
+        </configuration> 
+    </config>     
+    <default-operation>merge</default-operation> 
+    <error-option>stop-on-error</error-option> 
+    <test-option>test-then-set</test-option> 
+</edit-config> 
