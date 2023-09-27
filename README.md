@@ -100,7 +100,11 @@ python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG \
 In this example, we dispatch the `<get-software-information/>` RPC twice via the CLI, and the output is provided without any formatting. The `ncclient` library automatically adds the `nc` namespace prefix to the `rpc-reply` tag in the XML output."
 
 ```bash
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --log-level WARNING --rpc '<get-software-information/>' --rpc '<get-software-information/>'
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py \
+    --host 10.10.1.35 \
+    --log-level WARNING \
+    --rpc '<get-software-information/>' \
+    --rpc '<get-software-information/>'
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:a5b259da-d8d8-462c-aa6e-35499e6b6303">
 <software-information>
     <host-name>vevo1</host-name>
@@ -138,7 +142,15 @@ dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$
 
 Next we surround the output with a single `root` tag, remove the `nc` namespace prefix, and modify the output to include a title above each rpc reply. 
 ```bash
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --log-level WARNING --rpc '<get-software-information/>' --rpc '<get-software-information/>' |  sed -e '1i\<root>' -e '$a\</root>' -e 's/nc://g' | xmllint --xpath '//rpc-reply' - | awk '/<rpc-reply/{print "RPC REPLY " ++i} 1;/<\/rpc-reply>/{print ""}' | sed '$d'
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py \
+    --host 10.10.1.35 \
+    --log-level WARNING \
+    --rpc '<get-software-information/>' \
+    --rpc '<get-software-information/>' | \
+    sed -e '1i\<root>' -e '$a\</root>' -e 's/nc://g' | \
+    xmllint --xpath '//rpc-reply' - | \
+    awk '/<rpc-reply/{print "RPC REPLY " ++i} 1;/<\/rpc-reply>/{print ""}' | \
+    sed '$d'
 RPC REPLY 1
 <rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:94d23471-01c9-420e-91d1-082369df2108">
 <software-information>
