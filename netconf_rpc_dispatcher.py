@@ -97,7 +97,7 @@ def main():
     parser.add_argument("--port", type=int, default=830, help="NETCONF server port")
     parser.add_argument("--username", type=str, default='lab', help="NETCONF client username")
     parser.add_argument("--password", type=str, default='lab123', help="NETCONF client password")
-    parser.add_argument("--ssh-key", type=str, default=os.path.expanduser("~/.ssh/id_ecdsa"), help="NETCONF client private SSH key")
+    parser.add_argument("--ssh-key", type=str, default="~/.ssh/id_ecdsa", help="NETCONF client private SSH key")
 
     # ADD LOGGING OPTS
     parser.add_argument("--log-file", type=str, default=None, help="Logging file")
@@ -125,7 +125,7 @@ def main():
     logging.info("Connecting to NETCONF server")
     nc_conn = establish_ncclient_connection(
                     args.host, args.port, args.username,
-                    args.password, args.ssh_key)
+                    args.password, os.path.expanduser(args.ssh_key))
 
     nc_conn.timeout = args.timeout
     
