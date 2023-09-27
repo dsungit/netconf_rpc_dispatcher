@@ -14,6 +14,8 @@ While there are dedicated functions and helper routines available in `ncclient` 
 * No NETCONF over TLS at this time
 * Execute Multiple RPCs per session by invoking `--rpc` option multiple times
 
+This script was tested against Juniper [vEVO](https://www.juniper.net/documentation/us/en/software/vJunosEvolved/vjunos-evolved-kvm/topics/vjunosevolved-understand.html) Routers
+
 ## REQUIREMENTS
 * https://github.com/ncclient/ncclient
 
@@ -97,7 +99,7 @@ python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG \
 
 ### RAW
 
-In this example, we dispatch the `<get-software-information/>` RPC twice via the CLI, and the output is provided without any formatting. The `ncclient` library automatically adds the `nc` namespace prefix to the `rpc-reply` tag in the XML output."
+In this example, we dispatch the `<get-software-information/>` RPC twice via the CLI, and the output is provided without any formatting. The `ncclient` library automatically adds the `nc` namespace prefix to the `rpc-reply` tag in the XML output.
 
 ```bash
 dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py \
