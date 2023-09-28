@@ -23,13 +23,6 @@ def setup_logger(args: argparse.Namespace):
            ]
         )
 
-def establish_ncclient_connection(host: str, port: int, username: str, password: str, ssh_key: str) -> transport.Session:
-    """Attempt to connect to NETCONF server via SSH and return connection handler"""
-    connection = manager.connect(
-        host=host, port=port, username=username,
-        password=password, key_filename=ssh_key)
-    return connection
-
 def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session) -> RPCReply:
     """Processes the XML RPC and return <rpc-reply> element."""
     # Inspect XML for '<rpc>' tag and remove
@@ -38,6 +31,7 @@ def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session)
     try:
         # <edit-config> operation
         if rpc_data.tag == 'edit-config':
+            assert ":candidate" in netconf_connection.server_capabilities,"Candidate Configuration Capability not found"
             logging.info(f"Executing '<{rpc_data.tag}>' NETCONF operation")
             netconf_connection.lock(target='candidate')
             rpc_reply = netconf_connection.rpc(rpc_command=rpc_data)
@@ -70,10 +64,8 @@ def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session)
         netconf_connection.close_session()
         sys.exit(1)
 
-def process_rpc(rpc: str):
-    """
-    Read in list of RPCs from argparse --rpc option and transform them into XML objects 
-    """
+def process_rpc(rpc: str) -> etree.Element:
+    """Read in list of RPCs from argparse --rpc option and transform them into XML objects"""
     if os.path.isfile(rpc):
         with open(rpc, "r") as file:
             rpc_data = file.read()
@@ -123,9 +115,9 @@ def main():
         xml_rpcs.append(etree.fromstring(input_xml))
 
     logging.info("Connecting to NETCONF server")
-    nc_conn = establish_ncclient_connection(
-                    args.host, args.port, args.username,
-                    args.password, os.path.expanduser(args.ssh_key))
+    nc_conn = manager.connect(
+        host=args.host, port=args.port, username=args.username,
+        password=args.password, key_filename=os.path.expanduser(args.ssh_key))
 
     nc_conn.timeout = args.timeout
     
