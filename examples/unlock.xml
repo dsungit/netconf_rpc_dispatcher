@@ -1,0 +1,7 @@
+<rpc>
+    <unlock>
+        <target>
+            <candidate/>
+        </target>
+    </unlock>
+</rpc>

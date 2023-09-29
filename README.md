@@ -1,7 +1,13 @@
 ## OVERVIEW
-This script ingests one or more generic NETCONF RPCs, dispatches the RPCs, and outputs the RPC replies to STDOUT.
+This script is a generic NETCONF RPC dispatcher that is written to enable network engineers and developers to quickly and easily test new NETCONF and YANG configurations.
 
-For `<edit-config>` NETCONF operations, the script automatically locks/commits/unlocks the target configuration datastore.
+It can be used to:
+
+* Test new NETCONF RPC operations by executing them on a remote NETCONF server.
+* Test new YANG configurations by loading them onto a remote NETCONF server and identifying and fixing any errors.
+* Develop and test NETCONF and YANG applications, such as a Python application that uses the nornir library to execute NETCONF RPCs on multiple devices.
+
+For `<edit-config>` NETCONF operations, the script automatically locks/commits/unlocks the target configuration datastore. This behavior [can be disabled](#example-8---disable-auto-lock-commit-and-unlock) by using the `--disable-auto-lock-commit-unlock` option
 
 Acceptable RPC input sources:
 * STDIN
@@ -22,19 +28,18 @@ This script was tested against Juniper [vEVO](https://www.juniper.net/documentat
 
 ## USAGE
 
-
 ```bash
-usage: netconf_rpc_dispatcher.py [-h] [--rpc RPC] [--timeout TIMEOUT] [--host HOST] [--port PORT] [--username USERNAME]
-                                 [--password PASSWORD] [--ssh-key SSH_KEY] [--log-file LOG_FILE]
-                                 [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: netconf_rpc_dispatcher.py [-h] [--rpc RPC] [--timeout TIMEOUT] [--disable-auto-lock-commit-unlock] [--host HOST] [--port PORT] [--username USERNAME]
+                                 [--password PASSWORD] [--ssh-key SSH_KEY] [--log-file LOG_FILE] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Generic NETCONF RPC Dispatcher
 
 options:
   -h, --help            show this help message and exit
-  --rpc RPC             RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)
-                        (default: None)
+  --rpc RPC             RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF) (default: None)
   --timeout TIMEOUT     RPC default response timeout in seconds (default: 60)
+  --disable-auto-lock-commit-unlock
+                        Disable automatic locking, committing, and unlocking for edit-config operations (default: False)
   --host HOST           NETCONF server host (default: localhost)
   --port PORT           NETCONF server port (default: 830)
   --username USERNAME   NETCONF client username (default: lab)
@@ -94,6 +99,54 @@ python3 netconf_rpc_dispatcher.py --host r1.lab --log-level DEBUG \
                </get-interface-information>
            </rpc>'
 ```
+
+### Example 8 - Disable Auto Lock Commit and Unlock:
+For `edit-config` operations, the script expects a candidate data store and will automatically lock, dispatch the RPC, commit, and unlock the target data store. The script expects a candidate data store because this allows for safe and controlled changes to the running configuration.
+
+You can disable the automatic lock-commit-unlock behavior by using the `--disable-auto-lock-commit-unlock` option. This may be useful if you need to finer control over the RPC execution flow. 
+
+In the example below, we want to use the `commit-confirmed` operation instead of the default `commit` operation to ensure that post-commit validation checks are run and that changes are automatically rolled back if the changes made result in loss of access to the device.
+
+RUN A COMMIT-CONFIRMED OPERATION MANUALLY
+```bash
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --disable-auto-lock-commit-unlock \
+        --rpc examples/lock.xml \
+        --rpc examples/jnpr/jnpr_edit_config.xml \
+        --rpc '<commit><confirmed/></commit>' \
+        --rpc examples/unlock.xml
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:f0d7401f-a116-4e8e-8995-dcd8db98fd53">
+<nc:ok/>
+</nc:rpc-reply>
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:9bbbfc3e-a53a-4a0b-a6d2-c93b33f32e62">
+<nc:ok/>
+</nc:rpc-reply>
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:b3bd4c46-1654-4572-982a-ed267944b7ae">
+<nc:ok/>
+</nc:rpc-reply>
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:c03a910e-30b5-44fc-bae5-3fddcd392888">
+<nc:ok/>
+</nc:rpc-reply>
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ 
+```
+	
+RUN SOME POST COMMIT VALIDATION CHECK
+```
+# commit confirmed will be rolled back in 10 minutes
+[edit class-of-service scheduler-maps]
+root@vevo1# show | compare 
+[edit class-of-service scheduler-maps SCH-MAP:NEBULA-TRANSIT]
+-  forwarding-class Q1-EXPEDITED-FORWARDING scheduler 10PCT-EF;
++  forwarding-class Q1-EXPEDITED-FORWARDING scheduler 15PCT-EF;
+```
+
+COMMIT THE CHANGE
+```bash
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --rpc '<commit/>'
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:06ee19d8-afc0-44f5-99e2-6341443a506c">
+<nc:ok/>
+</nc:rpc-reply>
+```
+
 
 ## SAMPLE SCRIPT OUTPUT
 

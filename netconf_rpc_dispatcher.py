@@ -23,14 +23,14 @@ def setup_logger(args: argparse.Namespace):
            ]
         )
 
-def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session) -> RPCReply:
+def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session, disable_auto_lock_commit_unlock: bool = False) -> RPCReply:
     """Processes the XML RPC and return <rpc-reply> element."""
     # Inspect XML for '<rpc>' tag and remove
     if rpc_data.tag == 'rpc': rpc_data = list(rpc_data)[0]
     
     try:
         # <edit-config> operation
-        if rpc_data.tag == 'edit-config':
+        if rpc_data.tag == 'edit-config' and not disable_auto_lock_commit_unlock:
             assert ":candidate" in netconf_connection.server_capabilities,"Candidate Configuration Capability not found"
             logging.info(f"Executing '<{rpc_data.tag}>' NETCONF operation")
             netconf_connection.lock(target='candidate')
@@ -41,7 +41,7 @@ def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session)
         # Other netconf operations
         # https://datatracker.ietf.org/doc/html/rfc6241#section-7
         # https://www.rfc-editor.org/rfc/rfc6022.html#section-3
-        elif rpc_data.tag in [ 'get', 'get-config', 'get-schema', 
+        elif rpc_data.tag in [ 'edit-config', 'get', 'get-config', 'get-schema',
                 'copy-config', 'delete-config', 'lock', 'unlock', 
                 'close-session', 'kill-session' ] :
             logging.info(f"Executing '<{rpc_data.tag}>' NETCONF operation")
@@ -60,7 +60,7 @@ def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session)
         netconf_connection.close_session()
         sys.exit(1)
     except RPCError as e:
-        logging.exception(e)
+        logging.exception(etree.tostring(e.xml).decode('utf-8'))
         netconf_connection.close_session()
         sys.exit(1)
 
@@ -83,6 +83,7 @@ def main():
     # ADD RPC OPTS
     parser.add_argument("--rpc",type=str, action="append", help="RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)")
     parser.add_argument("--timeout", type=int, default=60, help="RPC default response timeout in seconds")
+    parser.add_argument("--disable-auto-lock-commit-unlock", action="store_true", help="Disable automatic locking, committing, and unlocking for edit-config operations")
 
     # ADD NCCLIENT OPTS
     parser.add_argument("--host", type=str, default='localhost', help="NETCONF server host")
@@ -123,7 +124,7 @@ def main():
     
     # DISPATCH RPC
     for rpc in xml_rpcs:
-        rpc_reply = dispatch_rpc(rpc, nc_conn)
+        rpc_reply = dispatch_rpc(rpc, nc_conn, args.disable_auto_lock_commit_unlock)
         sys.stdout.write(repr(rpc_reply) + '\n')
 
     nc_conn.close_session()
