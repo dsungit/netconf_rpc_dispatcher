@@ -1,5 +1,8 @@
 ## OVERVIEW
-This script is a generic NETCONF RPC dispatcher that is written to enable network engineers and developers to quickly and easily test new NETCONF and YANG configurations.
+
+This script ingests one or more generic NETCONF RPCs, dispatches the RPCs to a target NETCONF server, and outputs the RPC replies to STDOUT.
+
+Its purpose is to enable network engineers and developers on my team to quickly and easily test new NETCONF and YANG configurations.
 
 It can be used to:
 
@@ -14,7 +17,7 @@ Acceptable RPC input sources:
 * --rpc `$XML_RPC_FILENAME` 
 * --rpc `$XML_RPC_STRING`
 
-While there are dedicated functions and helper routines available in `ncclient` library that simplify NETCONF operations from a development perspective, this script takes a more generalized approach for NETCONF RPC invocation. 
+While there are dedicated functions and helper routines available in `ncclient` library that simplify NETCONF operations from a development perspective, this script takes a more generalized approach for NETCONF RPC invocation. This allows developers to focus on properly modeling NETCONF XML RPC payloads, rather than getting tied down by specific library functions.
 
 * Only NETCONF over SSH
 * No NETCONF over TLS at this time
