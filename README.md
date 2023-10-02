@@ -139,7 +139,7 @@ In the example below, we want to use the `commit-confirmed` operation instead of
 
 **RUN A COMMIT-CONFIRMED OPERATION MANUALLY**
 ```bash
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --disable-auto-lock-commit-unlock \
+[ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --disable-auto-lock-commit-unlock \
         --rpc examples/lock.xml \
         --rpc examples/jnpr/jnpr_edit_config.xml \
         --rpc '<commit><confirmed/></commit>' \
@@ -156,7 +156,7 @@ dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_disp
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:c03a910e-30b5-44fc-bae5-3fddcd392888">
 <nc:ok/>
 </nc:rpc-reply>
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$
+[ncclient] $
 ```
 
 **RUN SOME POST COMMIT VALIDATION CHECK**
@@ -171,8 +171,29 @@ root@vevo1# show | compare
 
 **COMMIT THE CHANGE**
 ```bash
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_dispatcher.py --host 10.10.1.35 --rpc '<commit/>'
+[ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --rpc '<commit/>'
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:06ee19d8-afc0-44f5-99e2-6341443a506c">
 <nc:ok/>
 </nc:rpc-reply>
+```
+
+### Example 9 - NETCONF over TLS:
+
+```bash
+[ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --port 6513 --transport tls --ca-certs pki/ca/ca.crt --certfile pki/client/client.crt --keyfile pki/client/client.key <<< '<get-software-information/>'
+<nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:9336378c-8e16-4511-a1dc-c8a7b2acc2e6">
+<software-information>
+    <host-name>vevo1</host-name>
+    <product-model>ptx10001-36mr</product-model>
+    <product-name>jnp10001-36mr</product-name>
+    <junos-version>23.1R1.8-EVO</junos-version>
+    <yocto-version>3.0.2</yocto-version>
+    <kernel-version>5.2.60-yocto-standard-g3549735</kernel-version>
+    <package-information>
+        <name>junos-evo-install-ptx-fixed-x86-64-23.1R1.8-EVOI20230421141601-evo-builder-1</name>
+        <comment>JUNOS-EVO OS 64-bit [junos-evo-install-ptx-fixed-x86-64-23.1R1.8-EVOI20230421141601-evo-builder-1]</comment>
+    </package-information>
+</software-information>
+</nc:rpc-reply>
+[ncclient] $
 ```

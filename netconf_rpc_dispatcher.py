@@ -102,10 +102,10 @@ def main():
     nc_tls_parser.add_argument("--ca-certs", type=str, default='all_CAs', help="Path to the CA certificates file or directory")
     nc_tls_parser.add_argument("--certfile", type=str, default='client.crt', help="Path to the client certificate file (in PEM format)")
     nc_tls_parser.add_argument("--keyfile", type=str, default="client.key", help="Path to the client private key file (in PEM format)")
-    nc_tls_parser.add_argument("--tls-version", type=str, default="tlsv1_2", choices=["tlsv1_2", "tlsv1_3"], help="TLS version to use (either tlsv1_2 or tlsv1_3)")
+    # nc_tls_parser.add_argument("--tls-version", type=str, default="tlsv1_2", choices=["tlsv1_2", "tlsv1_3"], help="TLS version to use (either tlsv1_2 or tlsv1_3)")
 
     # NOTE:
-    #   TLS connection paramters aren't referenced in the official ncclient docs
+    #   TLS connection paramters aren't referenced in the official ncclient 0.6.13 docs
     #   https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
 
     # ADD LOGGING OPTS
@@ -138,13 +138,10 @@ def main():
             host=args.host, port=args.port, username=args.username,
             password=args.password, key_filename=os.path.expanduser(args.ssh_key))
     elif args.transport == 'tls':
-        #parser.error("Error: Unsupported transport option '{}'. Only 'ssh' is supported as of ncclient ver 0.6.13.".format(args.transport))
-        #sys.exit(1)
 
-        # See https://github.com/ncclient/ncclient/pull/556 for more information
         nc_conn = manager.connect_tls(
             host=args.host,ca_certs=args.ca_certs,check_hostname=False,server_hostname=args.host,
-            keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLSv1_2)
+            keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLS_CLIENT)
 
     nc_conn.HUGE_TREE_DEFAULT=True
     nc_conn.timeout = args.timeout
