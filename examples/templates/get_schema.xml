@@ -1,0 +1,9 @@
+<rpc>
+  <get>
+    <filter type="subtree">
+      <netconf-state>
+        <schemas/>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>

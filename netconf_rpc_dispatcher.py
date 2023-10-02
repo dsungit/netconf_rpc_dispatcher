@@ -8,7 +8,6 @@ from lxml import etree
 from ncclient import manager, transport
 from ncclient.operations.rpc import RPCReply, RPCError
 from ncclient.operations.errors import TimeoutExpiredError 
-from textwrap import dedent
 
 PROGNAME=os.path.basename(__file__)
 
@@ -26,7 +25,7 @@ def setup_logger(args: argparse.Namespace):
 def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session, disable_auto_lock_commit_unlock: bool = False) -> RPCReply:
     """Processes the XML RPC and return <rpc-reply> element."""
     # Inspect XML for '<rpc>' tag and remove
-    if rpc_data.tag == 'rpc': rpc_data = list(rpc_data)[0]
+    #if rpc_data.tag == 'rpc': rpc_data = list(rpc_data)[0]
     
     try:
         # <edit-config> operation
@@ -71,7 +70,6 @@ def process_rpc(rpc: str) -> etree.Element:
             rpc_data = file.read()
     else:
         rpc_data = rpc
-
     return etree.fromstring(rpc_data)
 
 
@@ -80,21 +78,39 @@ def main():
         description="Generic NETCONF RPC Dispatcher",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # NETCONF GENERIC OPTS
+    nc_generic_parser = parser.add_argument_group('NETCONF Generic OPTIONS')
+    nc_generic_parser.add_argument("--host", type=str, default='localhost', help="NETCONF server")
+    nc_generic_parser.add_argument("--port", type=int, default=830, help="NETCONF server port")
+    nc_generic_parser.add_argument("--transport", type=str, default="ssh", choices=["ssh", "tls"], help="NETCONF transport (ssh|tls)")
+
     # ADD RPC OPTS
-    parser.add_argument("--rpc",type=str, action="append", help="RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)")
-    parser.add_argument("--timeout", type=int, default=60, help="RPC default response timeout in seconds")
-    parser.add_argument("--disable-auto-lock-commit-unlock", action="store_true", help="Disable automatic locking, committing, and unlocking for edit-config operations")
+    rpc_parser = parser.add_argument_group('RPC Input OPTIONS')
+    rpc_parser.add_argument("--rpc",type=str, action="append", help="RPC XML data as FQPN (filename) or XML str. Read from STDIN if not provided...use Ctrl-D to signal EOF)")
+    rpc_parser.add_argument("--timeout", type=int, default=60, help="RPC default response timeout in seconds")
+    rpc_parser.add_argument("--disable-auto-lock-commit-unlock", action="store_true", help="Disable automatic locking, committing, and unlocking for edit-config operations")
 
-    # ADD NCCLIENT OPTS
-    parser.add_argument("--host", type=str, default='localhost', help="NETCONF server host")
-    parser.add_argument("--port", type=int, default=830, help="NETCONF server port")
-    parser.add_argument("--username", type=str, default='lab', help="NETCONF client username")
-    parser.add_argument("--password", type=str, default='lab123', help="NETCONF client password")
-    parser.add_argument("--ssh-key", type=str, default="~/.ssh/id_ecdsa", help="NETCONF client private SSH key")
+    # NETCONF SSH OPTS
+    nc_ssh_parser = parser.add_argument_group('SSH Transport OPTIONS')
+    nc_ssh_parser.add_argument("--username", type=str, default='lab', help="SSH username")
+    nc_ssh_parser.add_argument("--password", type=str, default='lab123', help="SSH password")
+    nc_ssh_parser.add_argument("--ssh-key", type=str, default="~/.ssh/id_ecdsa", help="SSH private key")
 
+    # NCCLIENT TLS OPTS
+    nc_tls_parser = parser.add_argument_group('TLS Transport OPTIONS')
+    nc_tls_parser.add_argument("--ca-certs", type=str, default='all_CAs', help="Path to the CA certificates file or directory")
+    nc_tls_parser.add_argument("--certfile", type=str, default='client.crt', help="Path to the client certificate file (in PEM format)")
+    nc_tls_parser.add_argument("--keyfile", type=str, default="client.key", help="Path to the client private key file (in PEM format)")
+    nc_tls_parser.add_argument("--tls-version", type=str, default="tlsv1_2", choices=["tlsv1_2", "tlsv1_3"], help="TLS version to use (either tlsv1_2 or tlsv1_3)")
+    
+    # NOTE:
+    #   TLS connection paramters aren't referenced in the official ncclient docs and support was only recently added to the master branch
+    #   https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
+    
     # ADD LOGGING OPTS
-    parser.add_argument("--log-file", type=str, default=None, help="Logging file")
-    parser.add_argument("--log-level", type=str, choices=["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="NOTSET", help="Logging level")
+    logging_parser = parser.add_argument_group('Logging Options')
+    logging_parser.add_argument("--log-file", type=str, default=None, help="Logging file")
+    logging_parser.add_argument("--log-level", type=str, choices=["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="NOTSET", help="Logging level")
 
     # ARGUMENT PROCESSING
     args = parser.parse_args()
@@ -105,7 +121,7 @@ def main():
     # RPC STR TO XML OBJECT CONVERSION
     # --rpc examples/get_config.xml 
     # --rpc '<rpc><get-config><source><running/></source></get-config></rpc>'
-    # echo '<rpc><get-config><source><running/></source></get-config></rpc>' | {PROGNAME} --host r1.lab 
+    # echo '<rpc><get-config><source><running/></source></get-config></rpc>' | {PROGNAME} --host ${NC_HOST}
 
     xml_rpcs: list[etree.Element] = []
     
@@ -116,10 +132,20 @@ def main():
         xml_rpcs.append(etree.fromstring(input_xml))
 
     logging.info("Connecting to NETCONF server")
-    nc_conn = manager.connect(
-        host=args.host, port=args.port, username=args.username,
-        password=args.password, key_filename=os.path.expanduser(args.ssh_key))
+    if args.transport == 'ssh':
+        nc_conn = manager.connect(
+            host=args.host, port=args.port, username=args.username,
+            password=args.password, key_filename=os.path.expanduser(args.ssh_key))
+    elif args.transport == 'tls':
+        parser.error("Error: Unsupported transport option '{}'. Only 'ssh' is supported as of ncclient ver 0.6.13.".format(args.transport))
+        sys.exit(1)
+   
+        #"See https://github.com/ncclient/ncclient/pull/556 for more information"
+        #nc_conn = manager.connect_tls(
+        #    ca_certs=args.ca_certs,check_hostname=False,hostname=args.host,
+        #    keyfile=args.keyfile, certfile=args.certfile)
 
+    nc_conn.HUGE_TREE_DEFAULT=True
     nc_conn.timeout = args.timeout
     
     # DISPATCH RPC
@@ -128,7 +154,6 @@ def main():
         sys.stdout.write(repr(rpc_reply) + '\n')
 
     nc_conn.close_session()
-
     logging.info("NETCONF script completed")
 
 if __name__ == "__main__":
