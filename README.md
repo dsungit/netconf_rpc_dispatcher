@@ -65,8 +65,6 @@ TLS Transport OPTIONS:
   --ca-certs CA_CERTS   Path to the CA certificates file or directory (default: all_CAs)
   --certfile CERTFILE   Path to the client certificate file (in PEM format) (default: client.crt)
   --keyfile KEYFILE     Path to the client private key file (in PEM format) (default: client.key)
-  --tls-version {tlsv1_2,tlsv1_3}
-                        TLS version to use (either tlsv1_2 or tlsv1_3) (default: tlsv1_2)
 
 Logging Options:
   --log-file LOG_FILE   Logging file (default: None)
@@ -180,7 +178,10 @@ root@vevo1# show | compare
 ### Example 9 - NETCONF over TLS:
 
 ```bash
-[ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --port 6513 --transport tls --ca-certs pki/ca/ca.crt --certfile pki/client/client.crt --keyfile pki/client/client.key <<< '<get-software-information/>'
+[ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --port 6513 --transport tls \
+    --ca-certs pki/ca/ca.crt \
+    --certfile pki/client/client.crt \
+    --keyfile pki/client/client.key <<< '<get-software-information/>'
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:9336378c-8e16-4511-a1dc-c8a7b2acc2e6">
 <software-information>
     <host-name>vevo1</host-name>
@@ -196,4 +197,32 @@ root@vevo1# show | compare
 </software-information>
 </nc:rpc-reply>
 [ncclient] $
+```
+
+**JUNIPER ACX VERIFICATION**
+```
+lab@vevo1# show system services netconf
+ssh {
+    port 830;
+}
+tls {
+    local-certificate netconf-server-cert;
+    client-identity lab {
+        fingerprint 04:71:1A:92:AA:AF:8D:83:9B:CF:A4:7F:3C:67:73:52:46:9B:74:B0:E4:16:F7:EF:39:C1:6B:02:D0:10:D4:C3:8E;
+        map-type specified;
+        username lab;
+    }
+    traceoptions {
+        file netconf-tls.trace;
+        flag all;
+    }
+}
+rfc-compliant;
+yang-compliant;
+
+[edit]
+lab@vevo1#
+*** netconf-tls.trace ***
+Oct  2 15:23:13 NETCONF_TLS_CERT_TO_USERNAME_MAPPED: Extracted username from cert based on map-type: lab
+Oct  2 15:23:13 NETCONF_TLS_AUTHZ_SUCCESS: Authorization succeeded. Mapped local username: lab
 ```
