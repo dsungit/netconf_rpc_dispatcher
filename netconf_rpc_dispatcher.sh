@@ -23,15 +23,15 @@ NC_TLS_CRT='client.crt'
 NC_CA_CRT='all_CAs'
 NC_TLS_VER='tls1_2' # see `man openssl-s_client` for valid TLS options
 
-# NOTE: 
+# NOTE:
 # Linux SSH client does not support NETCONF 1.1, so no methods have been implemented to deal with chunked framing
 # https://github.com/libssh2/libssh2/blob/master/example/subsystem_netconf.c#L249
 
-# JUNIPER TLS NOTES: 
+# JUNIPER TLS NOTES:
 # https://www.juniper.net/documentation/us/en/software/junos/netconf/topics/topic-map/netconf-tls-connection.html
 # https://www.juniper.net/documentation/en_US/junos/topics/concept/netconf-tls-connection-overview.htm
 # Junos devices do not support using Elliptic Curve Digital Signature Algorithm (ECDSA) keys in NETCONF sessions over TLS.
-# The server listens for incoming NETCONF-over-TLS connections on TCP port 6513 (appears to be unconfigurable) 
+# The server listens for incoming NETCONF-over-TLS connections on TCP port 6513 (appears to be unconfigurable)
 
 # https://apps.juniper.net/feature-explorer/feature-info.html?fKey=11264&fn=Netconf%20over%20TLS
 # Juniper NETCONF TLS implementation only supports TLS 1.2
@@ -57,13 +57,13 @@ function process_rpc() {
 function process_netconf_1_0() {
     # Will reference this function later if pretty print opt is required
     local rpc_replies=()
-    IFS=']]>]]>' 
+    IFS=']]>]]>'
 
     # POP NETCONF HELLO MESSAGE
     NC_SERVER_HELLO="${rpc_replies[0]}"
     unset rpc_replies[0]
     rpc_replies=("${rpc_replies[@]}")
- 
+
     for ((i = 0; i < ${#rpc_requests[@]}; i++)); do
         echo "RPC Request ${i}:"
         echo "${rpc_requests[i]}"
@@ -95,7 +95,7 @@ NETCONF Generic OPTIONS:
  --transport TRANSPORT     NETCONF transport protocol (ssh|tls). (Default: ssh)
 
 RPC Input OPTIONS:
- --rpc FILE/STRING         NETCONF XML RPC as a FILE/STRING 
+ --rpc FILE/STRING         NETCONF XML RPC as a FILE/STRING
                            This option can be invoked multiple times to dispatch multiple RPCs
                            If omitted, the script will automatically read from STDIN.
 
@@ -142,7 +142,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)  usage; exit;;
         --log-file) die "Invalid option: '$1'. Use bash shell redirection instead";;
         --outform)  OUTFORM=$2;shift 2;;
-        
+
         # NETCONF GENERIC OPTIONS
         --host)         NC_HOST=$2;shift 2;;
         --port)         NC_PORT=$2;shift 2;;
@@ -153,7 +153,7 @@ while [[ $# -gt 0 ]]; do
         --ssh-username) NC_SSH_USERNAME=$2;shift 2;;
         --ssh-password) NC_SSH_PASSWORD=$2;shift 2;;
         --ssh-key)      NC_SSH_KEY=$2;shift 2;;
-        
+
         # TLS OPTIONS
         --ca-crt)       NC_CA_CRT=$2;shift 2;;  # Mainly for lab
         --tls-key)      NC_TLS_KEY=$2;shift 2;;
@@ -169,7 +169,7 @@ done
 [[ ${NC_TRANSPORT_OPTS[@]}  =~ "${NC_TRANSPORT}" ]] || \
     die "Invalid --transport option: '${NC_TRANSPORT}'. Valid options: $(echo ${NC_TRANSPORT_OPTS[@]})"
 
-# READ RPC FROM STDIN IF NO `--rpc` OPT IS SET 
+# READ RPC FROM STDIN IF NO `--rpc` OPT IS SET
 [ ${#NC_RPCS[@]} -eq 0 ] && NC_RPCS+=$(cat)
 ([ ${#NC_RPCS[@]} -eq 0 ] ||  [[ "${NC_RPCS[@]}" =~ ^[[:space:]]*$ ]]) && die "Please input 1 or more NETCONF RPCs"
 

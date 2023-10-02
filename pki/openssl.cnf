@@ -85,12 +85,12 @@ commonName                      = Common Name
 emailAddress                    = Email Address
 
 # Optionally, specify some defaults.
-countryName_default             = US 
+countryName_default             = US
 stateOrProvinceName_default     = CA
 localityName_default            = Los Angeles
 0.organizationName_default      = Home Lab
 organizationalUnitName_default  = LAB
-emailAddress_default            = 
+emailAddress_default            =
 
 [ v3_ca ]
 # Extensions for a typical CA (`man x509v3_config`).

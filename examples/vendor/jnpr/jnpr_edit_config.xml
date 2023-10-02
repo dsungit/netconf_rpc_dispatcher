@@ -1,8 +1,8 @@
-<edit-config> 
-    <target> 
-        <candidate/> 
+<edit-config>
+    <target>
+        <candidate/>
     </target>
-    <config> 
+    <config>
         <configuration>
             <class-of-service>
                 <scheduler-maps>
@@ -24,10 +24,10 @@
                         <scheduler>1PCT-NC</scheduler>
                     </forwarding-class>
                 </scheduler-maps>
-            </class-of-service>         
-        </configuration> 
-    </config>     
-    <default-operation>merge</default-operation> 
-    <error-option>stop-on-error</error-option> 
-    <test-option>test-then-set</test-option> 
-</edit-config> 
+            </class-of-service>
+        </configuration>
+    </config>
+    <default-operation>merge</default-operation>
+    <error-option>stop-on-error</error-option>
+    <test-option>test-then-set</test-option>
+</edit-config>

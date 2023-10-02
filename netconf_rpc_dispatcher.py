@@ -3,11 +3,12 @@ import argparse
 import sys
 import os
 import logging
+import ssl
 
 from lxml import etree
 from ncclient import manager, transport
 from ncclient.operations.rpc import RPCReply, RPCError
-from ncclient.operations.errors import TimeoutExpiredError 
+from ncclient.operations.errors import TimeoutExpiredError
 
 PROGNAME=os.path.basename(__file__)
 
@@ -25,8 +26,8 @@ def setup_logger(args: argparse.Namespace):
 def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session, disable_auto_lock_commit_unlock: bool = False) -> RPCReply:
     """Processes the XML RPC and return <rpc-reply> element."""
     # Inspect XML for '<rpc>' tag and remove
-    #if rpc_data.tag == 'rpc': rpc_data = list(rpc_data)[0]
-    
+    if rpc_data.tag == 'rpc': rpc_data = list(rpc_data)[0]
+
     try:
         # <edit-config> operation
         if rpc_data.tag == 'edit-config' and not disable_auto_lock_commit_unlock:
@@ -41,11 +42,11 @@ def dispatch_rpc(rpc_data: etree.Element, netconf_connection: transport.Session,
         # https://datatracker.ietf.org/doc/html/rfc6241#section-7
         # https://www.rfc-editor.org/rfc/rfc6022.html#section-3
         elif rpc_data.tag in [ 'edit-config', 'get', 'get-config', 'get-schema',
-                'copy-config', 'delete-config', 'lock', 'unlock', 
+                'copy-config', 'delete-config', 'lock', 'unlock',
                 'close-session', 'kill-session' ] :
             logging.info(f"Executing '<{rpc_data.tag}>' NETCONF operation")
             rpc_reply = netconf_connection.rpc(rpc_command=rpc_data)
-        
+
         # Generic RPC dispatch
         else:
             logging.info(f"Executing '<{rpc_data.tag}>' RPC")
@@ -102,11 +103,11 @@ def main():
     nc_tls_parser.add_argument("--certfile", type=str, default='client.crt', help="Path to the client certificate file (in PEM format)")
     nc_tls_parser.add_argument("--keyfile", type=str, default="client.key", help="Path to the client private key file (in PEM format)")
     nc_tls_parser.add_argument("--tls-version", type=str, default="tlsv1_2", choices=["tlsv1_2", "tlsv1_3"], help="TLS version to use (either tlsv1_2 or tlsv1_3)")
-    
+
     # NOTE:
-    #   TLS connection paramters aren't referenced in the official ncclient docs and support was only recently added to the master branch
+    #   TLS connection paramters aren't referenced in the official ncclient docs
     #   https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
-    
+
     # ADD LOGGING OPTS
     logging_parser = parser.add_argument_group('Logging Options')
     logging_parser.add_argument("--log-file", type=str, default=None, help="Logging file")
@@ -115,18 +116,18 @@ def main():
     # ARGUMENT PROCESSING
     args = parser.parse_args()
     setup_logger(args)
- 
+
     logging.info("Starting NETCONF script")
 
     # RPC STR TO XML OBJECT CONVERSION
-    # --rpc examples/get_config.xml 
+    # --rpc examples/get_config.xml
     # --rpc '<rpc><get-config><source><running/></source></get-config></rpc>'
     # echo '<rpc><get-config><source><running/></source></get-config></rpc>' | {PROGNAME} --host ${NC_HOST}
 
     xml_rpcs: list[etree.Element] = []
-    
+
     if args.rpc:
-        xml_rpcs += list(map(process_rpc, args.rpc)) 
+        xml_rpcs += list(map(process_rpc, args.rpc))
     else:
         input_xml = sys.stdin.read().strip()
         xml_rpcs.append(etree.fromstring(input_xml))
@@ -137,17 +138,17 @@ def main():
             host=args.host, port=args.port, username=args.username,
             password=args.password, key_filename=os.path.expanduser(args.ssh_key))
     elif args.transport == 'tls':
-        parser.error("Error: Unsupported transport option '{}'. Only 'ssh' is supported as of ncclient ver 0.6.13.".format(args.transport))
-        sys.exit(1)
-   
-        #"See https://github.com/ncclient/ncclient/pull/556 for more information"
-        #nc_conn = manager.connect_tls(
-        #    ca_certs=args.ca_certs,check_hostname=False,hostname=args.host,
-        #    keyfile=args.keyfile, certfile=args.certfile)
+        #parser.error("Error: Unsupported transport option '{}'. Only 'ssh' is supported as of ncclient ver 0.6.13.".format(args.transport))
+        #sys.exit(1)
+
+        # See https://github.com/ncclient/ncclient/pull/556 for more information
+        nc_conn = manager.connect_tls(
+            host=args.host,ca_certs=args.ca_certs,check_hostname=False,server_hostname=args.host,
+            keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLSv1_2)
 
     nc_conn.HUGE_TREE_DEFAULT=True
     nc_conn.timeout = args.timeout
-    
+
     # DISPATCH RPC
     for rpc in xml_rpcs:
         rpc_reply = dispatch_rpc(rpc, nc_conn, args.disable_auto_lock_commit_unlock)

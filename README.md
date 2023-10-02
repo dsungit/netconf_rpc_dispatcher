@@ -14,21 +14,23 @@ For `<edit-config>` NETCONF operations, the script automatically locks/commits/u
 
 Acceptable RPC input sources:
 * STDIN
-* --rpc `$XML_RPC_FILENAME` 
+* --rpc `$XML_RPC_FILENAME`
 * --rpc `$XML_RPC_STRING`
 
-While there are dedicated functions and helper routines available in the `ncclient 0.6.13` python library that simplify NETCONF operations from a development perspective, this script takes a more generalized approach for NETCONF RPC invocation.
+While there are dedicated functions and helper routines available in the `ncclient` Python library that simplify NETCONF operations from a development perspective, this script takes a more generalized approach for NETCONF RPC invocation.
 
 Notes:
-* Only NETCONF over SSH
-* No NETCONF over TLS at this time
+* NETCONF over SSH/TLS
 * Execute Multiple RPCs per session by invoking `--rpc` option multiple times
+* TLS support requires installing ncclient from the master branch
+** TLS connection paramters aren't referenced in the official ncclient docs
+** https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
+** https://github.com/ncclient/ncclient/pull/556
 
-This script was tested against Juniper [vEVO](https://www.juniper.net/documentation/us/en/software/vJunosEvolved/vjunos-evolved-kvm/topics/vjunosevolved-understand.html) Routers
+This script was primarily tested against Juniper [vEVO](https://www.juniper.net/documentation/us/en/software/vJunosEvolved/vjunos-evolved-kvm/topics/vjunosevolved-understand.html) Routers
 
 ## REQUIREMENTS
 * https://github.com/ncclient/ncclient
-
 
 ## USAGE
 
@@ -131,7 +133,7 @@ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --log-level DEBUG \
 ### Example 8 - Disable Auto Lock Commit and Unlock:
 For `edit-config` operations, the script expects a candidate data store and will automatically lock, dispatch the RPC, commit, and unlock the target data store. The script expects a candidate data store because this allows for safe and controlled changes to the running configuration.
 
-You can disable the automatic lock-commit-unlock behavior by using the `--disable-auto-lock-commit-unlock` option. This may be useful if you need to finer control over the RPC execution flow. 
+You can disable the automatic lock-commit-unlock behavior by using the `--disable-auto-lock-commit-unlock` option. This may be useful if you need to finer control over the RPC execution flow.
 
 In the example below, we want to use the `commit-confirmed` operation instead of the default `commit` operation to ensure that post-commit validation checks are run and that changes are automatically rolled back if the changes made result in loss of access to the device.
 
@@ -154,14 +156,14 @@ dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ python3 netconf_rpc_disp
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:c03a910e-30b5-44fc-bae5-3fddcd392888">
 <nc:ok/>
 </nc:rpc-reply>
-dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$ 
+dysun@dysun-Super-Server:~/code/netconf_rpc_dispatcher$
 ```
-	
+
 **RUN SOME POST COMMIT VALIDATION CHECK**
 ```
 # commit confirmed will be rolled back in 10 minutes
 [edit class-of-service scheduler-maps]
-root@vevo1# show | compare 
+root@vevo1# show | compare
 [edit class-of-service scheduler-maps SCH-MAP:NEBULA-TRANSIT]
 -  forwarding-class Q1-EXPEDITED-FORWARDING scheduler 10PCT-EF;
 +  forwarding-class Q1-EXPEDITED-FORWARDING scheduler 15PCT-EF;

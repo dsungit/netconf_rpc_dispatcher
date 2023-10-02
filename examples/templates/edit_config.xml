@@ -1,33 +1,33 @@
-<rpc> 
-    <edit-config> 
-        <target> 
-            <candidate/> 
-        </target> 
-    
-    <!-- EITHER --> 
-    
-        <config> 
-            <configuration> 
-                <!-- tag elements representing the data to incorporate --> 
-            </configuration> 
-        </config> 
-    
-    <!-- OR --> 
-    
-        <config-text> 
-            <configuration-text> 
-                <!-- configuration data in text format --> 
-            </configuration-text> 
-        </config-text> 
-   
-    <!-- OR --> 
-   
-        <url format="(xml | text)"> 
-            <!-- location specifier for file containing data --> 
-        </url> 
-    
-        <default-operation>(merge | none | replace)</default-operation> 
-        <error-option>(ignore-error | stop-on-error)</error-option> 
-        <test-option>(set | test-then-set)</test-option> 
-    </edit-config> 
-</rpc> 
+<rpc>
+    <edit-config>
+        <target>
+            <candidate/>
+        </target>
+
+    <!-- EITHER -->
+
+        <config>
+            <configuration>
+                <!-- tag elements representing the data to incorporate -->
+            </configuration>
+        </config>
+
+    <!-- OR -->
+
+        <config-text>
+            <configuration-text>
+                <!-- configuration data in text format -->
+            </configuration-text>
+        </config-text>
+
+    <!-- OR -->
+
+        <url format="(xml | text)">
+            <!-- location specifier for file containing data -->
+        </url>
+
+        <default-operation>(merge | none | replace)</default-operation>
+        <error-option>(ignore-error | stop-on-error)</error-option>
+        <test-option>(set | test-then-set)</test-option>
+    </edit-config>
+</rpc>
