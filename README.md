@@ -37,7 +37,7 @@ This script was primarily tested against Juniper [vEVO](https://www.juniper.net/
 ```bash
 usage: netconf_rpc_dispatcher.py [-h] [--host HOST] [--port PORT] [--transport {ssh,tls}] [--rpc RPC] [--timeout TIMEOUT] [--disable-auto-lock-commit-unlock]
                                  [--username USERNAME] [--password PASSWORD] [--ssh-key SSH_KEY] [--ca-certs CA_CERTS] [--certfile CERTFILE] [--keyfile KEYFILE]
-                                 [--tls-version {tlsv1_2,tlsv1_3}] [--log-file LOG_FILE] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                                 [--log-file LOG_FILE] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Generic NETCONF RPC Dispatcher
 
@@ -75,7 +75,7 @@ Logging Options:
 ### Example 1 - RPC from STDIN (file):
 ```bash
 python3 netconf_rpc_dispatcher.py --host ${NC_HOST} \
-    --log-level DEBUG <examples/jnpr/jnpr_edit_config.xml
+    --log-level DEBUG <examples/vendor/jnpr/jnpr_edit_config.xml
 ```
 
 ### Example 2 - RPC from STDIN (single line text):
@@ -88,7 +88,7 @@ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} \
 ```bash
 cat << EOF | python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --log-level DEBUG
 <rpc>
-    <get-config>
+    <get-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
         <source>
             <running/>
         </source>
@@ -100,26 +100,26 @@ EOF
 ### Example 4 - RPC from file via the '--rpc' option:
 ```bash
 python3 netconf_rpc_dispatcher.py --host ${NC_HOST} \
-    --log-level DEBUG --rpc examples/jnpr/jnpr_edit_config.xml
+    --log-level DEBUG --rpc examples/vendor/jnpr/jnpr_edit_config.xml
 ```
 
 ### Example 5 - Redirect STDERR to logfile:
 ```bash
 python3 netconf_rpc_dispatcher.py --host ${NC_HOST} \
-    --log-level DEBUG <examples/jnpr/jnpr_get_config.xml 2> session.log
+    --log-level DEBUG <examples/vendor/jnpr/jnpr_get_config.xml 2> session.log
 ```
 
 ### Example 6 - Redirect STDERR to STDOUT and logfile:
 ```bash
 python3 netconf_rpc_dispatcher.py --host ${NC_HOST} \
-    --log-level DEBUG <examples/jnpr/jnpr_get_config.xml 2>&1 | \
+    --log-level DEBUG <examples/vendor/jnpr/jnpr_get_config.xml 2>&1 | \
     tee session.log
 ```
 ### Example 7 - Multiple RPCs:
 ```bash
 python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --log-level DEBUG \
     --rpc '<get-chassis-inventory/>'  \
-    --rpc 'examples/get_config.xml'   \
+    --rpc 'examples/templates/get_config.xml'   \
     --rpc '<rpc>
                <get-interface-information>
                    <terse/>
@@ -138,10 +138,10 @@ In the example below, we want to use the `commit-confirmed` operation instead of
 **RUN A COMMIT-CONFIRMED OPERATION MANUALLY**
 ```bash
 [ncclient] $ python3 netconf_rpc_dispatcher.py --host ${NC_HOST} --disable-auto-lock-commit-unlock \
-        --rpc examples/lock.xml \
-        --rpc examples/jnpr/jnpr_edit_config.xml \
+        --rpc examples/templates/lock.xml \
+        --rpc examples/vendor/jnpr/jnpr_edit_config.xml \
         --rpc '<commit><confirmed/></commit>' \
-        --rpc examples/unlock.xml
+        --rpc examples/templates/unlock.xml
 <nc:rpc-reply  xmlns:junos="http://xml.juniper.net/junos/23.1R0/junos" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:f0d7401f-a116-4e8e-8995-dcd8db98fd53">
 <nc:ok/>
 </nc:rpc-reply>
