@@ -20,12 +20,12 @@ Acceptable RPC input sources:
 While there are dedicated functions and helper routines available in the `ncclient` Python library that simplify NETCONF operations from a development perspective, this script takes a more generalized approach for NETCONF RPC invocation.
 
 Notes:
-* NETCONF over SSH/TLS
+* Both NETCONF over SSH/TLS support
 * Execute Multiple RPCs per session by invoking `--rpc` option multiple times
-* TLS support requires installing ncclient from the master branch
-** TLS connection paramters aren't referenced in the official ncclient docs
-** https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
-** https://github.com/ncclient/ncclient/pull/556
+* TLS support requires installing ncclient from the master branch at this time
+    * TLS connection paramters aren't referenced in the official ncclient docs as of v0.6.13
+    * https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
+    * https://github.com/ncclient/ncclient/pull/556
 
 This script was primarily tested against Juniper [vEVO](https://www.juniper.net/documentation/us/en/software/vJunosEvolved/vjunos-evolved-kvm/topics/vjunosevolved-understand.html) Routers
 
