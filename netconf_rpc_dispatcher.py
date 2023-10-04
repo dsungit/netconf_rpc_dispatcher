@@ -109,7 +109,7 @@ def main():
     #   https://github.com/ncclient/ncclient/blob/master/ncclient/transport/tls.py#L67
 
     # ADD LOGGING OPTS
-    logging_parser = parser.add_argument_group('Logging Options')
+    logging_parser = parser.add_argument_group('Logging OPTIONS')
     logging_parser.add_argument("--log-file", type=str, default=None, help="Logging file")
     logging_parser.add_argument("--log-level", type=str, choices=["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="NOTSET", help="Logging level")
 
@@ -138,7 +138,6 @@ def main():
             host=args.host, port=args.port, username=args.username,
             password=args.password, key_filename=os.path.expanduser(args.ssh_key))
     elif args.transport == 'tls':
-
         nc_conn = manager.connect_tls(
             host=args.host,ca_certs=args.ca_certs,check_hostname=False,server_hostname=args.host,
             keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLS_CLIENT)
