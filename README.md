@@ -66,7 +66,7 @@ TLS Transport OPTIONS:
   --certfile CERTFILE   Path to the client certificate file (in PEM format) (default: client.crt)
   --keyfile KEYFILE     Path to the client private key file (in PEM format) (default: client.key)
 
-Logging Options:
+Logging OPTIONS:
   --log-file LOG_FILE   Logging file (default: None)
   --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Logging level (default: NOTSET)
