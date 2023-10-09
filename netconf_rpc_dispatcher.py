@@ -140,7 +140,7 @@ def main():
     elif args.transport == 'tls':
         nc_conn = manager.connect_tls(
             host=args.host,ca_certs=args.ca_certs,check_hostname=False,server_hostname=args.host,
-            keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLS_CLIENT)
+            keyfile=args.keyfile, certfile=args.certfile, protocol=ssl.PROTOCOL_TLS_CLIENT, port=args.port)
 
     nc_conn.HUGE_TREE_DEFAULT=True
     nc_conn.timeout = args.timeout
